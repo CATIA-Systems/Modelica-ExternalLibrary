@@ -1,0 +1,6 @@
+*.dll
+__pycache__
+*.bak-mo
+.idea
+build/
+*.egg-info
