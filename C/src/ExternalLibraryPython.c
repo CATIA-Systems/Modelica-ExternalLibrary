@@ -13,10 +13,12 @@
 #include "ExternalLibrary.h"
 
 #define PYTHON_MODULE "external_library"
+#define ENV_VAR_MAX_SIZE 32767
 
-const char *externalFunction(const char *filename, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
+static const char *initializePython(const char *pythonHome) {
 
-	DWORD dwAttrib = GetFileAttributesA(pythonHome);
+#ifdef _WIN32
+	DWORD dwAttrib = GetFileAttributes(pythonHome);
 
 	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
 	int isdir = dwAttrib & FILE_ATTRIBUTE_DIRECTORY;
@@ -25,7 +27,28 @@ const char *externalFunction(const char *filename, const char *pythonHome, int n
 		return "Argument pythonHome must be a valid directory.";
 	}
 
-	BOOL res = SetDllDirectoryA(pythonHome);
+	// add the Anaconda environment to the system path 
+	char path[ENV_VAR_MAX_SIZE];
+
+	strcpy(path, pythonHome);
+	strcat(path, ";");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\mingw-w64\\bin;");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\usr\\bin;");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\bin;");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\Scripts;");
+	strcat(path, pythonHome);
+	strcat(path, "\\bin;");
+
+	size_t len = strlen(path);
+
+	GetEnvironmentVariable("PATH", &path[len], ENV_VAR_MAX_SIZE);
+
+	SetEnvironmentVariable("PATH", path);
+#endif
 
 	size_t size;
 	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);
@@ -33,6 +56,17 @@ const char *externalFunction(const char *filename, const char *pythonHome, int n
 	Py_SetPythonHome(python_home_w);
 
 	Py_Initialize();
+
+	return NULL;
+}
+
+const char *externalFunction(const char *filename, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
+
+	const char *error = initializePython(pythonHome);
+
+	if (error) {
+		return error;
+	}
 
 	PyObject *py_moduleName = PyUnicode_FromString(PYTHON_MODULE);
 	
@@ -95,49 +129,11 @@ void* createExternalObject(const char *filename, const char *pythonHome, const M
 		return NULL;
 	}
 
-#ifdef _WIN32
-	DWORD dwAttrib = GetFileAttributesA(pythonHome);
+	const char *error = initializePython(pythonHome);
 
-	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
-	int isdir = dwAttrib & FILE_ATTRIBUTE_DIRECTORY;
-
-	if (!pythonHome || !valid || !isdir) {
-		callbacks->ModelicaError("Argument pythonHome must be a valid directory.");
-		return NULL;
+	if (error) {
+		return error;
 	}
-
-	// add the Anaconda environment to the system path 
-
-#define ENV_VAR_MAX_SIZE 32767
-
-	char path[ENV_VAR_MAX_SIZE];
-
-	strcpy(path, pythonHome);
-	strcat(path, ";");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\mingw-w64\\bin;");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\usr\\bin;");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\bin;");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\Scripts;");
-	strcat(path, pythonHome);
-	strcat(path, "\\bin;");
-
-	size_t len = strlen(path);
-
-	GetEnvironmentVariable("PATH", &path[len], ENV_VAR_MAX_SIZE);
-
-	SetEnvironmentVariable("PATH", path);
-#endif
-
-	size_t size;
-	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);
-
-	Py_SetPythonHome(python_home_w);
-
-	Py_Initialize();
 
 	PythonObjects *o = malloc(sizeof(PythonObjects));
 
