@@ -6,8 +6,6 @@ set(EXTERNAL_LANGUAGE "CPP" CACHE STRING "Language of the external functions")
 set_property(CACHE EXTERNAL_LANGUAGE PROPERTY STRINGS CPP Python)
 
 set(PYTHON_HOME "E:/Anaconda3/envs/py37_64" CACHE STRING "Python home")
-set(PYTHON_INCLUDE_DIR "E:/Anaconda3/envs/py37_64/include" CACHE STRING "Python include directory")
-set(PYTHON_LIBRARY "E:/Anaconda3/envs/py37_64/libs/python37.lib" CACHE STRING "Static Python library")
 
 if (MSVC)
   # link statically against the the Visual C runtime
@@ -42,10 +40,7 @@ else ()
   set (SOURCE_FILES ${SOURCE_FILES} C/src/ExternalLibraryPython.c)
 endif ()
 
-
-add_library(ExternalLibrary SHARED
-  ${SOURCE_FILES}
-)
+add_library(ExternalLibrary SHARED ${SOURCE_FILES})
 
 target_include_directories(ExternalLibrary PUBLIC
   ExternalLibrary/Resources/Include
@@ -53,10 +48,12 @@ target_include_directories(ExternalLibrary PUBLIC
 )
 
 if ("${EXTERNAL_LANGUAGE}" STREQUAL "Python")
-  target_include_directories(ExternalLibrary PUBLIC ${PYTHON_INCLUDE_DIR})
-  target_link_libraries(ExternalLibrary ${PYTHON_LIBRARY})
-  get_filename_component(PYTHON_LIBRARY_NAME ${PYTHON_LIBRARY} NAME_WLE)
-  set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_LIBRARY_NAME}.dll")
+  target_include_directories(ExternalLibrary PUBLIC ${PYTHON_HOME}/include)
+  file(GLOB PYTHON_LIB ${PYTHON_HOME}/libs/python3?.lib)
+  target_link_libraries(ExternalLibrary ${PYTHON_LIB})
+  file(GLOB PYTHON_DLL ${PYTHON_HOME}/python3?.dll)
+  get_filename_component(PYTHON_DLL ${PYTHON_DLL} NAME)
+  set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_DLL}")
 endif ()
 
 SET_TARGET_PROPERTIES(ExternalLibrary PROPERTIES PREFIX "")
@@ -66,9 +63,7 @@ add_custom_command(TARGET ExternalLibrary POST_BUILD COMMAND ${CMAKE_COMMAND} -E
   "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/ExternalLibrary.dll"
 )
 
-add_executable(ExternalLibraryTest
-  C/tests/ExternalLibrary_test.cpp
-)
+add_executable(ExternalLibraryTest C/tests/ExternalLibrary_test.cpp)
 
 target_compile_definitions(ExternalLibraryTest PUBLIC
   DATA_FILE=\"${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Data/data.txt\"
