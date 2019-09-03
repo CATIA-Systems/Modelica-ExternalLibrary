@@ -1,6 +1,8 @@
 #include <stdlib.h>
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -16,6 +18,7 @@
 
 const char *externalFunction(const char *filename, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
 
+#ifdef _WIN32
 	DWORD dwAttrib = GetFileAttributesA(pythonHome);
 
 	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
@@ -26,6 +29,7 @@ const char *externalFunction(const char *filename, const char *pythonHome, int n
 	}
 
 	BOOL res = SetDllDirectoryA(pythonHome);
+#endif
 
 	size_t size;
 	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);
@@ -95,6 +99,7 @@ void* createExternalObject(const char *filename, const char *pythonHome, const M
 		return NULL;
 	}
 
+#ifdef _WIN32
 	DWORD dwAttrib = GetFileAttributesA(pythonHome);
 
 	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
@@ -106,6 +111,7 @@ void* createExternalObject(const char *filename, const char *pythonHome, const M
 	}
 
 	BOOL res = SetDllDirectoryA(pythonHome);
+#endif
 
 	size_t size;
 	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);

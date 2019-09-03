@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 3.14)
 
 project (ExternalLibrary)
 
@@ -56,14 +56,16 @@ if ("${EXTERNAL_LANGUAGE}" STREQUAL "Python")
   target_include_directories(ExternalLibrary PUBLIC ${PYTHON_INCLUDE_DIR})
   target_link_libraries(ExternalLibrary ${PYTHON_LIBRARY})
   get_filename_component(PYTHON_LIBRARY_NAME ${PYTHON_LIBRARY} NAME_WLE)
-  set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_LIBRARY_NAME}.dll")
+  if (WIN32)
+    set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_LIBRARY_NAME}.dll")
+  endif ()
 endif ()
 
 SET_TARGET_PROPERTIES(ExternalLibrary PROPERTIES PREFIX "")
 
 add_custom_command(TARGET ExternalLibrary POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
   "$<TARGET_FILE:ExternalLibrary>"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/ExternalLibrary.dll"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/ExternalLibrary${CMAKE_SHARED_LIBRARY_SUFFIX}"
 )
 
 add_executable(ExternalLibraryTest
@@ -79,5 +81,9 @@ target_include_directories(ExternalLibraryTest PUBLIC
   ExternalLibrary/Resources/Include
   C/include
 )
+
+if (UNIX)
+  target_link_libraries(ExternalLibraryTest dl)
+endif ()
 
 add_dependencies(ExternalLibraryTest ExternalLibrary)
