@@ -95,6 +95,7 @@ void* createExternalObject(const char *filename, const char *pythonHome, const M
 		return NULL;
 	}
 
+#ifdef _WIN32
 	DWORD dwAttrib = GetFileAttributesA(pythonHome);
 
 	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
@@ -105,7 +106,31 @@ void* createExternalObject(const char *filename, const char *pythonHome, const M
 		return NULL;
 	}
 
-	BOOL res = SetDllDirectoryA(pythonHome);
+	// add the Anaconda environment to the system path 
+
+#define ENV_VAR_MAX_SIZE 32767
+
+	char path[ENV_VAR_MAX_SIZE];
+
+	strcpy(path, pythonHome);
+	strcat(path, ";");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\mingw-w64\\bin;");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\usr\\bin;");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\bin;");
+	strcat(path, pythonHome);
+	strcat(path, "\\Library\\Scripts;");
+	strcat(path, pythonHome);
+	strcat(path, "\\bin;");
+
+	size_t len = strlen(path);
+
+	GetEnvironmentVariable("PATH", &path[len], ENV_VAR_MAX_SIZE);
+
+	SetEnvironmentVariable("PATH", path);
+#endif
 
 	size_t size;
 	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);
