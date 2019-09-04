@@ -1,46 +1,47 @@
 within ExternalLibrary;
 model ExternalLibraryObject
+  extends Modelica.Blocks.Interfaces.MIMO;
 
-  parameter String filename;
-  parameter String moduleName;
-  parameter String className;
-  parameter String pythonHome;
-
-  Modelica.Blocks.Interfaces.RealInput u[nin] "Connector of Real input signal"
-    annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-
-  Modelica.Blocks.Interfaces.RealOutput y[nout]
-    "Connector of Real output signal"
-    annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+  parameter String filename "Filename of the data file";
+  parameter String moduleName "Python module name of the external object";
+  parameter String className "Class name of the external object";
+  parameter String pythonHome "Path to the Python environment";
 
   ExternalLibrary.Internal.ExternalLibraryObject externalObject=
       ExternalLibrary.Internal.ExternalLibraryObject(filename, moduleName, className, pythonHome);
 
 protected
-  constant Integer nin=2;
-  constant Integer nout=2;
-
   function evaluate
     input ExternalLibrary.Internal.ExternalLibraryObject externalObject;
-    input Real[nin] u_;
-    output Real[nout] y_;
+    input Integer nin;
+    input Real[:] u;
+    input Integer nout;
+    output Real[nout] y;
   external"C" evaluateExternalObject(
         externalObject,
-        size(u_, 1),
-        u_,
-        size(y_, 1),
-        y_) annotation (Library="ExternalLibrary");
+        nin,
+        u,
+        nout,
+        y) annotation (Library="ExternalLibrary");
   end evaluate;
 
 equation
-  y = evaluate(externalObject, u);
+  y = evaluate(externalObject, nin, u, nout);
 
-  annotation (Icon(graphics={Rectangle(
-          extent={{-100,-100},{100,100}},
-          lineColor={0,0,127},
-          fillColor={255,255,255},
-          fillPattern=FillPattern.Solid)}), experiment(
+  annotation (                              experiment(
       StopTime=10,
       __Dymola_fixedstepsize=0.05,
-      __Dymola_Algorithm="Euler"));
+      __Dymola_Algorithm="Euler"), Icon(graphics={Polygon(
+          points={{0,40},{0,34},{-54,34},{-54,-64},{44,-64},{44,-10},{50,-10},{
+              50,-70},{-60,-70},{-60,40},{0,40}},
+          fillColor={95,95,95},
+          fillPattern=FillPattern.Solid,
+          pattern=LinePattern.None,
+          lineColor={0,0,0}),        Polygon(
+          points={{-38,-44},{-34,-48},{42,28},{70,0},{70,60},{10,60},{38,32},{
+              -38,-44}},
+          fillColor={95,95,95},
+          fillPattern=FillPattern.Solid,
+          pattern=LinePattern.None,
+          lineColor={0,0,0})}));
 end ExternalLibraryObject;
