@@ -1,11 +1,15 @@
 within ExternalLibrary;
-model LibraryObjectExample
+model ExternalLibraryObjectExample
   extends Modelica.Icons.Example;
   Modelica.Blocks.Sources.Sine sine(amplitude=1, freqHz=1)
     annotation (Placement(transformation(extent={{-60,18},{-40,38}})));
   Modelica.Blocks.Sources.Sine sine1(amplitude=2, freqHz=1)
     annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
-  LibraryObject libraryObject
+  ExternalLibraryObject libraryObject(
+    filename=Modelica.Utilities.Files.loadResource(
+        "modelica://ExternalLibrary/Resources/Data/data.txt"),
+                                      moduleName="external_library", className="ExternalLibraryObject",
+    pythonHome=Modelica.Utilities.System.getEnvironmentVariable("PYTHONHOME"))
     annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
 equation
   connect(sine.y, libraryObject.u[1]) annotation (Line(points={{-39,28},{-26,28},
@@ -18,4 +22,4 @@ equation
             100,100}})),
     experiment(__Dymola_fixedstepsize=0.001, __Dymola_Algorithm="Euler"),
     __Dymola_Commands(file="Resources/Scripts/plot.mos" "plot"));
-end LibraryObjectExample;
+end ExternalLibraryObjectExample;

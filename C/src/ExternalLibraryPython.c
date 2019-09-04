@@ -127,7 +127,7 @@ const char *externalFunction(const char *filename, const char *moduleName, const
 	Py_FinalizeEx();
 
 out:
-	return error;
+	return error ? error : "";
 }
 
 typedef struct {

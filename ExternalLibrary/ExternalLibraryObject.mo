@@ -1,8 +1,10 @@
 within ExternalLibrary;
-model LibraryObject
+model ExternalLibraryObject
 
-  parameter String filename=Modelica.Utilities.Files.loadResource("modelica://ExternalLibrary/Resources/Data/data.txt");
-  parameter String pythonHome=Modelica.Utilities.System.getEnvironmentVariable("PYTHONHOME");
+  parameter String filename;
+  parameter String moduleName;
+  parameter String className;
+  parameter String pythonHome;
 
   Modelica.Blocks.Interfaces.RealInput u[nin] "Connector of Real input signal"
     annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
@@ -12,7 +14,7 @@ model LibraryObject
     annotation (Placement(transformation(extent={{100,-10},{120,10}})));
 
   ExternalLibrary.Internal.ExternalLibraryObject externalObject=
-      ExternalLibrary.Internal.ExternalLibraryObject(filename, pythonHome);
+      ExternalLibrary.Internal.ExternalLibraryObject(filename, moduleName, className, pythonHome);
 
 protected
   constant Integer nin=2;
@@ -41,4 +43,4 @@ equation
       StopTime=10,
       __Dymola_fixedstepsize=0.05,
       __Dymola_Algorithm="Euler"));
-end LibraryObject;
+end ExternalLibraryObject;

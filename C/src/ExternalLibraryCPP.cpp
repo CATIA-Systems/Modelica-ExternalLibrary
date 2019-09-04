@@ -68,7 +68,7 @@ void* createExternalObject(const char *filename, const char *moduleName, const c
 	}
 
 	if (!className || strcmp(className, "ExternalLibraryObject")) {
-		error = "Argument className must not be \"ExternalLibraryObject\".";
+		error = "Argument className must be \"ExternalLibraryObject\".";
 		goto out;
 	}
 
