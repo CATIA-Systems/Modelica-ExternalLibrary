@@ -32,7 +32,7 @@ jobs:
   - script: cpp_build\Release\ExternalLibraryTest.exe
     displayName: Test C++ library
 
-  - script: cmake . -G "Visual Studio 15 2017 Win64" -Bpython_build -DEXTERNAL_LANGUAGE=Python -DPYTHON_HOME=C:/Miniconda/envs/myEnvironment -DPYTHON_INCLUDE_DIR=C:/Miniconda/envs/myEnvironment/include -DPYTHON_LIBRARY=C:/Miniconda/envs/myEnvironment/libs/python37.lib
+  - script: cmake . -G "Visual Studio 15 2017 Win64" -Bpython_build -DEXTERNAL_LANGUAGE=Python -DPYTHON_HOME=C:/Miniconda/envs/myEnvironment
     displayName: Run CMake generator
 
   - script: cmake --build python_build --config Release

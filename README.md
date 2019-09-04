@@ -46,7 +46,7 @@ To run the tests, right click on the `ExternalLibraryTest` project, select `Set 
 
 ## Building the Python library
 
-To build a shared library that calls Python follow the steps above, but after you pressed `Configure`, select `EXTERNAL_LANGUAGE=Python` and (assuming that you installed Anaconda Python 3.7 in `C:/Anaconda3`) set `PYTHON_HOME=C:/Anaconda3`, `PYTHON_INCLUDE_DIR=C:/Anaconda3/include` and `PYTHON_LIBRARY=C:/Anaconda3/libs/python37.lib`.
+To build a shared library that calls Python follow the steps above, but after you pressed `Configure`, select `EXTERNAL_LANGUAGE=Python` and set `PYTHON_HOME=C:/Anaconda3` (assuming that you installed Anaconda Python 3.7 in `C:/Anaconda3`).
 
 To install the Python library in development mode run `pip install -e Python` in the root of the repository. This will allow you edit the Python code without reinstalling the library.
 
