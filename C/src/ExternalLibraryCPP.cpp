@@ -5,10 +5,14 @@
 
 #define UNUSED(x) (void)(x);
 
+const char* externalFunction(const char *filename, const char *moduleName, const char *functionName, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
 
-const char *externalFunction(const char *filename, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
-
+	UNUSED(moduleName)
 	UNUSED(pythonHome)
+
+	if (strcmp(functionName, "external_library_function")) {
+		return "Argument functionName must be \"external_library_function\".";
+	}
 
 	std::ifstream infile(filename);
 
@@ -29,10 +33,10 @@ const char *externalFunction(const char *filename, const char *pythonHome, int n
 	return "";
 }
 
-class JetEngine {
+class ExternalLibraryObject {
 
 public:
-	JetEngine(double k) {
+	ExternalLibraryObject(double k) {
 		this->k = k;
 	}
 
@@ -50,37 +54,56 @@ protected:
 
 };
 
-void* createExternalObject(const char *filename, const char *pythonHome, const ModelicaUtilityFunctions_t *callbacks) {
+void* createExternalObject(const char *filename, const char *moduleName, const char *className, const char *pythonHome, const ModelicaUtilityFunctions_t *callbacks) {
 
+	UNUSED(moduleName)
 	UNUSED(pythonHome)
 
+	const char *error = nullptr;
+	std::ifstream *infile = nullptr;
+
 	if (!filename) {
-		callbacks->ModelicaError("Argument filename must not be NULL.");
-		return nullptr;
+		error = "Argument filename must not be NULL.";
+		goto out;
 	}
 
-	std::ifstream infile(filename);
+	if (!className || strcmp(className, "ExternalLibraryObject")) {
+		error = "Argument className must not be \"ExternalLibraryObject\".";
+		goto out;
+	}
 
-	if (!infile.is_open()) {
-		callbacks->ModelicaError("Failed to open data file.");
-		return nullptr;
+	infile = new std::ifstream(filename);
+
+	if (!infile->is_open()) {
+		error = "Failed to open data file.";
+		goto out;
 	}
 
 	double k;
 
-	infile >> k;
-	
-	return new JetEngine(k);
+	*infile >> k;
+
+out:
+	if (infile) delete infile;
+
+	if (error) {
+		if (callbacks->ModelicaError) {
+			callbacks->ModelicaError(error);
+		}
+		return nullptr;
+	}
+
+	return new ExternalLibraryObject(k);
 }
 
 void evaluateExternalObject(void *externalObject, int nu, const double u[], int ny, double y[]) {
 	if (!externalObject) return;
-	JetEngine *jetEngine = reinterpret_cast<JetEngine*>(externalObject);
-	jetEngine->evaluate(nu, u, ny, y);
+	ExternalLibraryObject *externalLibraryObject = static_cast<ExternalLibraryObject*>(externalObject);
+	externalLibraryObject->evaluate(nu, u, ny, y);
 }
 
 void freeExternalObject(void *externalObject) {
 	if (!externalObject) return;
-	JetEngine *jetEngine = reinterpret_cast<JetEngine*>(externalObject);
-	delete jetEngine;
+	ExternalLibraryObject *externalLibraryObject = static_cast<ExternalLibraryObject*>(externalObject);
+	delete externalLibraryObject;
 }

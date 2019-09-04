@@ -8,6 +8,11 @@
 using namespace Catch::Matchers;
 
 
+#define MODULE_NAME   "external_library"
+#define FUNCTION_NAME "external_library_function"
+#define CLASS_NAME    "ExternalLibraryObject"
+
+
 template<typename T> T *get(HMODULE libraryHandle, const char *functionName) {
 
 # ifdef _WIN32
@@ -50,9 +55,9 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 		double u[] = { 1, 2 };
 		double y[] = { 0, 0 };
 
-		auto message = fp_externalFunction(DATA_FILE, PYTHON_HOME, 2, u, 2, y);
+		auto message = fp_externalFunction(DATA_FILE, MODULE_NAME, FUNCTION_NAME, PYTHON_HOME, 2, u, 2, y);
 
-		CHECK(message == nullptr);
+		CHECK(message, Equals(""));
 		CHECK(y[0] == 4);
 		CHECK(y[1] == 5);
 	}
@@ -61,7 +66,7 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 
 		auto fp_createExternalObject = get<createExternalObject>(l, "createExternalObject");
 
-		fp_createExternalObject(nullptr, nullptr, &callbacks);
+		fp_createExternalObject(nullptr, nullptr, nullptr, nullptr, &callbacks);
 
 		CHECK_THAT(s_errorMessage, Equals("Argument filename must not be NULL."));
 	}
@@ -75,7 +80,7 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 		double u[] = { 1, 2 };
 		double y[] = { 0, 0 };
 
-		void *externalObject = fp_createExternalObject(DATA_FILE, PYTHON_HOME, &callbacks);
+		void *externalObject = fp_createExternalObject(DATA_FILE, MODULE_NAME, CLASS_NAME, PYTHON_HOME, &callbacks);
 
 		REQUIRE(externalObject);
 

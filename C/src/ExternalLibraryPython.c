@@ -83,18 +83,18 @@ static const char *handlePythonError() {
 
 #define HANDLE_ERROR(F) if (error = F) { goto out; }
 
-const char *externalFunction(const char *filename, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
+const char *externalFunction(const char *filename, const char *moduleName, const char *functionName, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
 
 	const char *error = NULL;
 	
 	HANDLE_ERROR(initializePython(pythonHome))
 
-	PyObject *py_moduleName = PyUnicode_FromString(PYTHON_MODULE);
+	PyObject *py_moduleName = PyUnicode_FromString(moduleName);
 	
 	PyObject *py_module = PyImport_Import(py_moduleName);
 	HANDLE_PYTHON_ERROR
 
-	PyObject *py_function = PyObject_GetAttrString(py_module, "external_library_function");
+	PyObject *py_function = PyObject_GetAttrString(py_module, functionName);
 	HANDLE_PYTHON_ERROR
 
 	PyObject *py_filename = PyUnicode_FromString(filename);
@@ -138,7 +138,7 @@ typedef struct {
 	PyObject *methodName;
 } PythonObjects;
 
-void* createExternalObject(const char *filename, const char *pythonHome, const ModelicaUtilityFunctions_t *callbacks) {
+void* createExternalObject(const char *filename, const char *moduleName, const char *className, const char *pythonHome, const ModelicaUtilityFunctions_t *callbacks) {
 
 	s_callbacks = *callbacks;
 	const char *error = NULL;
@@ -148,17 +148,27 @@ void* createExternalObject(const char *filename, const char *pythonHome, const M
 		goto out;
 	}
 
+	if (!moduleName) {
+		error = "Argument moduleName must not be NULL.";
+		goto out;
+	}
+
+	if (!className) {
+		error = "Argument className must not be NULL.";
+		goto out;
+	}
+
 	HANDLE_ERROR(initializePython(pythonHome))
 
 	PythonObjects o;
 
-	o.moduleName = PyUnicode_FromString(PYTHON_MODULE);
+	o.moduleName = PyUnicode_FromString(moduleName);
 	o.module = PyImport_Import(o.moduleName);
 	HANDLE_PYTHON_ERROR
 
 	o.methodName = PyUnicode_DecodeFSDefault("evaluate");
 
-	o.class = PyObject_GetAttrString(o.module, "ExternalLibraryObject");
+	o.class = PyObject_GetAttrString(o.module, className);
 	HANDLE_PYTHON_ERROR
 
 	PyObject *py_filename = PyUnicode_FromString(filename);
