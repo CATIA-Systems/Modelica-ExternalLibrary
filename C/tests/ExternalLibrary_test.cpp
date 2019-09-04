@@ -52,8 +52,9 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 
 		auto message = fp_externalFunction(DATA_FILE, PYTHON_HOME, 2, u, 2, y);
 
-		REQUIRE(y[0] == 4);
-		REQUIRE(y[1] == 5);
+		CHECK(message == nullptr);
+		CHECK(y[0] == 4);
+		CHECK(y[1] == 5);
 	}
 
 	SECTION("Return an error message") {
