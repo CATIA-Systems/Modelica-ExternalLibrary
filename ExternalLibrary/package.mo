@@ -2,7 +2,7 @@ within ;
 package ExternalLibrary
   extends Modelica.Icons.Package;
 
-  annotation (uses(Modelica(version="3.2.3")), Icon(graphics={
+  annotation (Icon(graphics={
                                                   Polygon(
           points={{0,40},{0,34},{-54,34},{-54,-64},{44,-64},{44,-10},{50,-10},{
             50,-70},{-60,-70},{-60,40},{0,40}},

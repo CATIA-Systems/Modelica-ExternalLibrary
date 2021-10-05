@@ -1,9 +1,9 @@
 within ExternalLibrary;
 model ExternalLibraryObjectExample
   extends Modelica.Icons.Example;
-  Modelica.Blocks.Sources.Sine sine(amplitude=1, freqHz=1)
+  Modelica.Blocks.Sources.Sine sine(amplitude=1)
     annotation (Placement(transformation(extent={{-60,18},{-40,38}})));
-  Modelica.Blocks.Sources.Sine sine1(amplitude=2, freqHz=1)
+  Modelica.Blocks.Sources.Sine sine1(amplitude=2)
     annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
   ExternalLibraryObject libraryObject(
     nin=2,
