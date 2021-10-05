@@ -13,6 +13,9 @@ if (MSVC)
   string(REPLACE "/MD"  "/MT"  CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
   string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG}")
   string(REPLACE "/MDd" "/MTd" CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}")
+
+  # disable CRT deprecation warnings
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 endif ()
 
 if (WIN32)
