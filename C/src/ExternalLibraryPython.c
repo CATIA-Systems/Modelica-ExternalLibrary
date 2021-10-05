@@ -233,7 +233,6 @@ out:
 		if (s_callbacks.ModelicaError) {
 			s_callbacks.ModelicaError(error);
 		}
-		return NULL;
 	}
 }
 
