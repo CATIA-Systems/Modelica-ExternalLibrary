@@ -79,7 +79,7 @@ static const char *handlePythonError() {
 	return str;
 }
 
-#define HANDLE_PYTHON_ERROR if (handlePythonError()) { goto out; }
+#define HANDLE_PYTHON_ERROR if (error = handlePythonError()) { goto out; }
 
 #define HANDLE_ERROR(F) if (error = F) { goto out; }
 
