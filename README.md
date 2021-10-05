@@ -14,10 +14,10 @@ This function can easily be adapted to different use cases e.g. pre-processing, 
 
 The library should also work with other versions, platforms and compilers but for simplicity we assume the following programs to be installed:
 
-- Visual Studio 2015
-- Dymola 2020
+- Visual Studio 2017
+- Dymola 2022
 - CMake 3.15
-- Anaconda Python 3.7 64-bit (only required for the Python backend)
+- Anaconda Python 3.8 64-bit (only required for the Python backend)
 
 ## Project structure
 
@@ -66,5 +66,5 @@ The `LibraryObjectExample` demonstrates the use of the external object.
 
 ## License
 
-Copyright &copy; 2019 Dassault Syst&egrave;mes.
+Copyright &copy; 2021 Dassault Syst&egrave;mes.
 The code is released under the [2-Clause BSD license](LICENSE.txt).
