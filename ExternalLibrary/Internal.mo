@@ -69,8 +69,10 @@ package Internal
     input String moduleName;
     input String functionName;
     input String pythonHome;
-    input Real[2] u;
-    output Real[2] y;
+    input Integer nu;
+    input Real[nu] u;
+    input Integer ny;
+    output Real[ny] y;
     output String errorMessage;
   external"C" errorMessage = externalFunction(
       filename,
