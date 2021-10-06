@@ -14,7 +14,9 @@ algorithm
     moduleName,
     functionName,
     pythonHome,
-    u);
+    size(u, 1),
+    u,
+    size(y, 1));
 
   assert(Modelica.Utilities.Strings.isEmpty(errorMessage), errorMessage);
 end externalLibraryFunction;
