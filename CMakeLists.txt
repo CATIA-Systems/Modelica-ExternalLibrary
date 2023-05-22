@@ -52,9 +52,9 @@ target_include_directories(ExternalLibrary PUBLIC
 
 if ("${EXTERNAL_LANGUAGE}" STREQUAL "Python")
   target_include_directories(ExternalLibrary PUBLIC ${PYTHON_HOME}/include)
-  file(GLOB PYTHON_LIB ${PYTHON_HOME}/libs/python3?.lib)
+  file(GLOB PYTHON_LIB ${PYTHON_HOME}/libs/python3?*.lib)
   target_link_libraries(ExternalLibrary ${PYTHON_LIB})
-  file(GLOB PYTHON_DLL ${PYTHON_HOME}/python3?.dll)
+  file(GLOB PYTHON_DLL ${PYTHON_HOME}/python3?*.dll)
   get_filename_component(PYTHON_DLL ${PYTHON_DLL} NAME)
   set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_DLL}")
 endif ()
