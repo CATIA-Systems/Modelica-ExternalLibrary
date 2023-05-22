@@ -5,6 +5,8 @@
 
 #define UNUSED(x) (void)(x);
 
+static ModelicaUtilityFunctions_t s_callbacks = { NULL };
+
 const char* externalFunction(const char *filename, const char *moduleName, const char *functionName, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
 
 	UNUSED(moduleName)
@@ -42,6 +44,11 @@ public:
 
 	void evaluate(int nu, const double u[], int ny, double y[]) {
 
+		if (nu != ny) {
+			s_callbacks.ModelicaFormatError("The number of inputs (%d) must be equal to the number of outputs (%d).", nu, ny);
+			return;
+		}
+
 		int s = (nu < ny) ? nu : ny;
 
 		for (int i = 0; i < s; i++) {
@@ -58,6 +65,8 @@ void* createExternalObject(const char *filename, const char *moduleName, const c
 
 	UNUSED(moduleName)
 	UNUSED(pythonHome)
+
+	s_callbacks = *callbacks;
 
 	const char *error = nullptr;
 	std::ifstream *infile = nullptr;

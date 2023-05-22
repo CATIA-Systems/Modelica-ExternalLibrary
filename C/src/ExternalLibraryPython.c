@@ -221,7 +221,10 @@ void evaluateExternalObject(void *externalObject, int nu, const double u[], int 
 
 	Py_ssize_t size = PyTuple_Size(py_y);
 
-	if (ny != size) return;
+	if (ny != size) {
+		error = "The size of the return value does not match the number of outputs.";
+		goto out;
+	}
 
 	for (int i = 0; i < ny; i++) {
 		PyObject *py_v = PyTuple_GetItem(py_y, i);
