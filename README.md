@@ -1,7 +1,5 @@
 # Modelica ExternalLibrary
 
-[![Build Status](https://dev.azure.com/CATIA-Systems/Modelica-ExternalLibrary/_apis/build/status/CATIA-Systems.Modelica-ExternalLibrary?branchName=master)](https://dev.azure.com/CATIA-Systems/Modelica-ExternalLibrary/_build/latest?definitionId=3&branchName=master)
-
 "ExternalLibrary" is a Modelica library that demonstrates how to call external C/C++ and Python code from Modelica. It implements a function that reads a double value from a text file, adds it to the inputs and returns the result:
 
 ```
