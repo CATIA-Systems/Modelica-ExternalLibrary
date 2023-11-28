@@ -64,5 +64,5 @@ The `LibraryObjectExample` demonstrates the use of the external object.
 
 ## License
 
-Copyright &copy; 2021 Dassault Syst&egrave;mes.
+Copyright &copy; 2023 Dassault Syst&egrave;mes.
 The code is released under the [2-Clause BSD license](LICENSE.txt).
