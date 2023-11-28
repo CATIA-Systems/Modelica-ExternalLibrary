@@ -1,0 +1,22 @@
+name: Build ExternalLibrary
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - run: cmake . --cmake-generator "Visual Studio 17 2022" --cmake-architecture x86 -Bcpp_build
+    - run: cmake --build cpp_build --config Release
+    - run: cpp_build\Release\ExternalLibraryTest.exe
+    - run: cmake . --cmake-generator "Visual Studio 17 2022" --cmake-architecture x86 -Bpython_build -DEXTERNAL_LANGUAGE=Python -DPYTHON_HOME=C:/Miniconda/envs/myEnvironment
+    - run: cmake --build python_build --config Release
+    - run: python_build\Release\ExternalLibraryTest.exe
