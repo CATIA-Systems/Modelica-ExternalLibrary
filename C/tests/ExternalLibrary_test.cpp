@@ -1,5 +1,22 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+
+#include "catch_amalgamated.hpp"
+
+
+# ifdef _WIN32
+#include <Windows.h>
+# else
+#include <unistd.h>
+#include <dlfcn.h>
+typedef void * HMODULE;
+#include <stdio.h>
+#include <limits.h>
+#include <libgen.h>
+# endif
+
+#ifdef _MSC_VER
+#define strdup _strdup
+#endif
 
 #define EXPORT typedef
 
@@ -18,7 +35,7 @@ template<typename T> T *get(HMODULE libraryHandle, const char *functionName) {
 # ifdef _WIN32
 	auto *fp = GetProcAddress(libraryHandle, functionName);
 # else
-	auto *fp = dlsym(m_libraryHandle, functionName);
+	auto *fp = dlsym(libraryHandle, functionName);
 # endif
 
 	REQUIRE(fp);
@@ -29,7 +46,7 @@ template<typename T> T *get(HMODULE libraryHandle, const char *functionName) {
 static const char *s_errorMessage = nullptr;
 
 static void ModelicaError(const char *string) {
-	s_errorMessage = _strdup(string);
+	s_errorMessage = strdup(string);
 }
 
 
@@ -39,7 +56,13 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 # ifdef _WIN32
 	auto l = LoadLibraryA("ExternalLibrary.dll");
 # else
-	auto l = dlopen("ExternalLibrary.so", RTLD_LAZY);
+	char buf[FILENAME_MAX];
+	ssize_t nbytes, bufsiz;
+	// get the path of the executable
+	nbytes = readlink("/proc/self/exe", buf, FILENAME_MAX);
+	auto basename = dirname(buf);
+	auto filename = strcat(basename, "/ExternalLibrary.so");
+	auto l = dlopen(filename, RTLD_NOW);
 # endif
 
 	ModelicaUtilityFunctions_t callbacks = { nullptr };

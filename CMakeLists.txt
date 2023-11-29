@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 3.14)
 
 project (ExternalLibrary)
 
@@ -51,22 +51,30 @@ target_include_directories(ExternalLibrary PUBLIC
 )
 
 if ("${EXTERNAL_LANGUAGE}" STREQUAL "Python")
-  target_include_directories(ExternalLibrary PUBLIC ${PYTHON_HOME}/include)
-  file(GLOB PYTHON_LIB ${PYTHON_HOME}/libs/python3?*.lib)
-  target_link_libraries(ExternalLibrary ${PYTHON_LIB})
-  file(GLOB PYTHON_DLL ${PYTHON_HOME}/python3?*.dll)
-  get_filename_component(PYTHON_DLL ${PYTHON_DLL} NAME)
-  set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_DLL}")
+  if (WIN32)
+    target_include_directories(ExternalLibrary PUBLIC ${PYTHON_HOME}/include)
+    file(GLOB PYTHON_LIB ${PYTHON_HOME}/libs/python3?*.lib)
+    target_link_libraries(ExternalLibrary ${PYTHON_LIB})
+    file(GLOB PYTHON_DLL ${PYTHON_HOME}/python3?*.dll)
+    get_filename_component(PYTHON_DLL ${PYTHON_DLL} NAME)
+    set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_LIBRARY_NAME}.dll")
+  else ()
+    target_include_directories(ExternalLibrary PUBLIC /usr/include/python3.10)
+  endif ()
 endif ()
 
 SET_TARGET_PROPERTIES(ExternalLibrary PROPERTIES PREFIX "")
 
 add_custom_command(TARGET ExternalLibrary POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
   "$<TARGET_FILE:ExternalLibrary>"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/ExternalLibrary.dll"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/ExternalLibrary${CMAKE_SHARED_LIBRARY_SUFFIX}"
 )
 
-add_executable(ExternalLibraryTest C/tests/ExternalLibrary_test.cpp)
+add_executable(ExternalLibraryTest 
+    C/tests/catch_amalgamated.hpp
+    C/tests/catch_amalgamated.cpp
+    C/tests/ExternalLibrary_test.cpp
+)
 
 target_compile_definitions(ExternalLibraryTest PUBLIC
   DATA_FILE=\"${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Data/data.txt\"
@@ -77,5 +85,9 @@ target_include_directories(ExternalLibraryTest PUBLIC
   ExternalLibrary/Resources/Include
   C/include
 )
+
+if (UNIX)
+  target_link_libraries(ExternalLibraryTest dl)
+endif ()
 
 add_dependencies(ExternalLibraryTest ExternalLibrary)
