@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
-    - run: sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+    - run: sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu qemu-user
     - run: cmake . -D CMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -D CMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++ -B cpp_build
     - run: cmake --build cpp_build
-    - run: ./cpp_build/ExternalLibraryTest
+    - run: qemu-aarch64 -L /usr/aarch64-linux-gnu ./cpp_build/ExternalLibraryTest
