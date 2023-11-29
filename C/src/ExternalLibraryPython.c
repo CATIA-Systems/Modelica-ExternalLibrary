@@ -1,6 +1,8 @@
 #include <stdlib.h>
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -13,15 +15,11 @@
 #include "ExternalLibrary.h"
 
 #define PYTHON_MODULE "external_library"
-#define ENV_VAR_MAX_SIZE 32767
 
-ModelicaUtilityFunctions_t s_callbacks = { NULL };
-
-
-static const char *initializePython(const char *pythonHome) {
+const char* externalFunction(const char* filename, const char* moduleName, const char* functionName, const char* pythonHome, int nu, const double u[], int ny, double y[]) {
 
 #ifdef _WIN32
-	DWORD dwAttrib = GetFileAttributes(pythonHome);
+	DWORD dwAttrib = GetFileAttributesA(pythonHome);
 
 	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
 	int isdir = dwAttrib & FILE_ATTRIBUTE_DIRECTORY;
@@ -30,26 +28,7 @@ static const char *initializePython(const char *pythonHome) {
 		return "Argument pythonHome must be a valid directory.";
 	}
 
-	char path[ENV_VAR_MAX_SIZE];
-
-	strcpy(path, pythonHome);
-	strcat(path, ";");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\mingw-w64\\bin;");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\usr\\bin;");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\bin;");
-	strcat(path, pythonHome);
-	strcat(path, "\\Library\\Scripts;");
-	strcat(path, pythonHome);
-	strcat(path, "\\bin;");
-
-	size_t len = strlen(path);
-
-	// add the Anaconda environment to the system path 
-	GetEnvironmentVariable("PATH", &path[len], ENV_VAR_MAX_SIZE);
-	SetEnvironmentVariable("PATH", path);
+	BOOL res = SetDllDirectoryA(pythonHome);
 #endif
 
 	size_t size;
@@ -59,43 +38,19 @@ static const char *initializePython(const char *pythonHome) {
 
 	Py_Initialize();
 
-	return NULL;
-}
-
-static const char *handlePythonError() {
-
-	PyObject *err = PyErr_Occurred();
-
-	if (!err) return NULL;
-
-	PyObject *ptype, *pvalue, *ptraceback;
-	PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-
-	PyObject *pystr = PyObject_Str(pvalue);
-
-	Py_ssize_t size;
-	const char *str = PyUnicode_AsUTF8AndSize(pystr, &size);
-
-	return str;
-}
-
-#define HANDLE_PYTHON_ERROR if (error = handlePythonError()) { goto out; }
-
-#define HANDLE_ERROR(F) if (error = F) { goto out; }
-
-const char *externalFunction(const char *filename, const char *moduleName, const char *functionName, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
-
-	const char *error = NULL;
-	
-	HANDLE_ERROR(initializePython(pythonHome))
-
-	PyObject *py_moduleName = PyUnicode_FromString(moduleName);
+	PyObject *py_moduleName = PyUnicode_FromString(PYTHON_MODULE);
 	
 	PyObject *py_module = PyImport_Import(py_moduleName);
-	HANDLE_PYTHON_ERROR
+	
+	if (!py_module) {
+		return "Failed to load Python module \"" PYTHON_MODULE "\".";
+	}
 
-	PyObject *py_function = PyObject_GetAttrString(py_module, functionName);
-	HANDLE_PYTHON_ERROR
+	PyObject *py_function = PyObject_GetAttrString(py_module, "external_library_function");
+
+	if (!py_function) {
+		return "Failed to load function \"external_library_function\" from Python module \"" PYTHON_MODULE "\".";
+	}
 
 	PyObject *py_filename = PyUnicode_FromString(filename);
 
@@ -115,8 +70,7 @@ const char *externalFunction(const char *filename, const char *moduleName, const
 	Py_ssize_t py_size = PyTuple_Size(py_y);
 
 	if (ny != py_size) {
-		error = "The Python function returned the wrong number of values.";
-		goto out;
+		return "Function \"interpolate\" returned the wrong number of values.";
 	}
 
 	for (int i = 0; i < ny; i++) {
@@ -126,8 +80,7 @@ const char *externalFunction(const char *filename, const char *moduleName, const
 
 	Py_FinalizeEx();
 
-out:
-	return error ? error : "";
+	return "";
 }
 
 typedef struct {
@@ -138,38 +91,54 @@ typedef struct {
 	PyObject *methodName;
 } PythonObjects;
 
-void* createExternalObject(const char *filename, const char *moduleName, const char *className, const char *pythonHome, const ModelicaUtilityFunctions_t *callbacks) {
 
-	s_callbacks = *callbacks;
-	const char *error = NULL;
+void* createExternalObject(const char* filename, const char* moduleName, const char* className, const char* pythonHome, const ModelicaUtilityFunctions_t* callbacks) {
 
 	if (!filename) {
-		error = "Argument filename must not be NULL.";
-		goto out;
+		callbacks->ModelicaError("Argument filename must not be NULL.");
+		return NULL;
 	}
 
-	if (!moduleName) {
-		error = "Argument moduleName must not be NULL.";
-		goto out;
+#ifdef _WIN32
+	DWORD dwAttrib = GetFileAttributesA(pythonHome);
+
+	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
+	int isdir = dwAttrib & FILE_ATTRIBUTE_DIRECTORY;
+
+	if (!pythonHome || !valid || !isdir) {
+		callbacks->ModelicaError("Argument pythonHome must be a valid directory.");
+		return NULL;
 	}
 
-	if (!className) {
-		error = "Argument className must not be NULL.";
-		goto out;
+	BOOL res = SetDllDirectoryA(pythonHome);
+#endif
+
+	size_t size;
+	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);
+
+	Py_SetPythonHome(python_home_w);
+
+	Py_Initialize();
+
+	PythonObjects *o = malloc(sizeof(PythonObjects));
+
+	if (!o) {
+		return NULL;
 	}
 
-	HANDLE_ERROR(initializePython(pythonHome))
+	o->moduleName = PyUnicode_FromString(PYTHON_MODULE);
+	o->module = PyImport_Import(o->moduleName);
+	o->module = PyImport_ReloadModule(o->module);
 
-	PythonObjects o;
+	if (!o->module) {
+		return NULL;
+	}
 
-	o.moduleName = PyUnicode_FromString(moduleName);
-	o.module = PyImport_Import(o.moduleName);
-	HANDLE_PYTHON_ERROR
+	o->methodName = PyUnicode_DecodeFSDefault("evaluate");
 
-	o.methodName = PyUnicode_DecodeFSDefault("evaluate");
+	o->class = PyObject_GetAttrString(o->module, "ExternalLibraryObject");
 
-	o.class = PyObject_GetAttrString(o.module, className);
-	HANDLE_PYTHON_ERROR
+	//int is_type = PyType_Check(o->class);
 
 	PyObject *py_filename = PyUnicode_FromString(filename);
 
@@ -177,32 +146,14 @@ void* createExternalObject(const char *filename, const char *moduleName, const c
 
 	PyTuple_SetItem(py_ctor_args, 0, py_filename);
 
-	o.instance = PyObject_CallObject(o.class, py_ctor_args);
-	HANDLE_PYTHON_ERROR
+	o->instance = PyObject_CallObject(o->class, py_ctor_args);
 
-out:
-	if (error) {
-		if (s_callbacks.ModelicaError) {
-			s_callbacks.ModelicaError(error);
-		}
-		return NULL;
-	}
+	PyErr_Print();
 
-	PythonObjects *po = malloc(sizeof(PythonObjects));
-
-	*po = o;
-
-	return po;
+	return o;
 }
 
 void evaluateExternalObject(void *externalObject, int nu, const double u[], int ny, double y[]) {
-
-	const char *error = NULL;
-
-	if (!externalObject) {
-		error = "Argument externalObject must not be NULL.";
-		goto out;
-	}
 
 	PythonObjects *o = (PythonObjects *)externalObject;
 
@@ -217,25 +168,16 @@ void evaluateExternalObject(void *externalObject, int nu, const double u[], int 
 	PyTuple_SetItem(py_args, 0, py_u);
 
 	PyObject *py_y = PyObject_CallMethodObjArgs(o->instance, o->methodName, py_u, NULL);
-	HANDLE_PYTHON_ERROR
+
+	PyErr_Print();
 
 	Py_ssize_t size = PyTuple_Size(py_y);
 
-	if (ny != size) {
-		error = "The size of the return value does not match the number of outputs.";
-		goto out;
-	}
+	if (ny != size) return;
 
 	for (int i = 0; i < ny; i++) {
 		PyObject *py_v = PyTuple_GetItem(py_y, i);
 		y[i] = PyFloat_AsDouble(py_v);
-	}
-
-out:
-	if (error) {
-		if (s_callbacks.ModelicaError) {
-			s_callbacks.ModelicaError(error);
-		}
 	}
 }
 

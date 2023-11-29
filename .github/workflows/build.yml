@@ -24,3 +24,10 @@ jobs:
     - run: cmake --build python_build --config Release
     - run: python -m pip install -e Python
     - run: python_build\Release\ExternalLibraryTest.exe
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - run: cmake . -Bcpp_build
+    - run: cmake --build cpp_build
+    - run: ./cpp_build/ExternalLibraryTest
