@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  x86_64-windows:
     runs-on: windows-2022
     steps:
     - uses: actions/checkout@v3
@@ -24,10 +24,18 @@ jobs:
     - run: cmake --build python_build --config Release
     - run: python -m pip install -e Python
     - run: python_build\Release\ExternalLibraryTest.exe
-  build-linux:
+  x86_64-linux:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - run: cmake . -Bcpp_build
+    - run: cmake --build cpp_build
+    - run: ./cpp_build/ExternalLibraryTest
+  aarch64-linux:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - run: sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+    - run: cmake . -D CMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -D CMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++ -B cpp_build
     - run: cmake --build cpp_build
     - run: ./cpp_build/ExternalLibraryTest
