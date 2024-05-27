@@ -5,10 +5,9 @@ model ExternalLibraryObject
   parameter String filename "Filename of the data file";
   parameter String moduleName "Python module name of the external object";
   parameter String className "Class name of the external object";
-  parameter String pythonHome "Path to the Python environment";
 
   ExternalLibrary.Internal.ExternalLibraryObject externalObject=
-      ExternalLibrary.Internal.ExternalLibraryObject(filename, moduleName, className, pythonHome);
+      ExternalLibrary.Internal.ExternalLibraryObject(filename, moduleName, className);
 
 protected
   function evaluate

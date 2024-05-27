@@ -6,7 +6,6 @@ model ExternalLibraryFunctionExample
       Modelica.Utilities.Files.loadResource("modelica://ExternalLibrary/Resources/Data/data.txt"),
       "external_library",
       "external_library_function",
-      Modelica.Utilities.System.getEnvironmentVariable("PYTHONHOME"),
       {1,2});
 
 end ExternalLibraryFunctionExample;

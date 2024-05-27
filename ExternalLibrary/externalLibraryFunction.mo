@@ -3,7 +3,6 @@ function externalLibraryFunction
   input String filename;
   input String moduleName;
   input String functionName;
-  input String pythonHome;
   input Real[2] u={1,2};
   output Real[2] y;
 protected
@@ -13,7 +12,6 @@ algorithm
     filename,
     moduleName,
     functionName,
-    pythonHome,
     size(u, 1),
     u,
     size(y, 1));

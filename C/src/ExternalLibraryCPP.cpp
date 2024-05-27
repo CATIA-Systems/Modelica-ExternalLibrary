@@ -8,10 +8,9 @@
 
 static ModelicaUtilityFunctions_t s_callbacks = { NULL };
 
-const char* externalFunction(const char *filename, const char *moduleName, const char *functionName, const char *pythonHome, int nu, const double u[], int ny, double y[]) {
+const char* externalFunction(const char *filename, const char *moduleName, const char *functionName, int nu, const double u[], int ny, double y[]) {
 
 	UNUSED(moduleName)
-	UNUSED(pythonHome)
 
 	if (strcmp(functionName, "external_library_function")) {
 		return "Argument functionName must be \"external_library_function\".";
@@ -62,10 +61,9 @@ protected:
 
 };
 
-void* createExternalObject(const char *filename, const char *moduleName, const char *className, const char *pythonHome, const ModelicaUtilityFunctions_t *callbacks) {
+void* createExternalObject(const char *filename, const char *moduleName, const char *className, const ModelicaUtilityFunctions_t *callbacks) {
 
 	UNUSED(moduleName)
-	UNUSED(pythonHome)
 
 	s_callbacks = *callbacks;
 
