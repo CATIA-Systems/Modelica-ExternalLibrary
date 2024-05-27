@@ -46,23 +46,34 @@ To run the tests, right click on the `ExternalLibraryTest` project, select `Set 
 
 To build a shared library that calls Python follow the steps above, but after you pressed `Configure`, select `EXTERNAL_LANGUAGE=Python` and set `PYTHON_HOME=C:/Anaconda3` (assuming that you installed Anaconda Python 3.7 in `C:/Anaconda3`).
 
-To install the Python library in development mode run `pip install -e Python` in the root of the repository. This will allow you edit the Python code without reinstalling the library.
+To install the Python library in development mode run `pip install -e Python` in the root of the repository.
+This will allow you edit the Python code without reinstalling the library.
 
-Run `ExternalLibraryTest` in Visual Studio to check if everything is set up correctly.
+In order use load the Python binaries and their dependencies two environment variables need to be for the process loading the `ExternalLibrary.dll`.
+
+`PYTHONHOME` needs to point to the folder that contains the Python executable.
+It can retrieved by running `which python`.
+
+`PATH` needs to contain all folders that contain Python binaries and dependencies.
+For Conda environments these can be retrived by running `set PATH` inside a Conda prompt.
+
+On the `ExternalLibraryTest` project in Visual Studio right-click and selct `Properties > Configuration Properties > Debugging`.
+In `Environment` set the two environment variables and run the project to check if everything is set up correctly.
 
 ## Modelica library
 
-The Modelica library is the same for both the C++ and the Python backend. It contains a Modelica function `libraryFunction` that can be used e.g. to load data at the beginning of a simulation and an ExternalObject `LibraryObject` to connect to external code during the simulation (e.g. to inter- or extrapolate using special algorithms).
+The Modelica library is the same for both the C++ and the Python backend.
+It contains a Modelica function `libraryFunction` that can be used e.g. to load data at the beginning of a simulation and an ExternalObject `LibraryObject` to connect to external code during the simulation (e.g. to inter- or extrapolate using special algorithms).
 
 ![Modelica library](ExternalLibrary/Resources/Images/ExternalLibrary.png)
 
-After loading the `ExternalLibrary` package in Dymola, go to `Commands` and run `Advanced.CompileWith64=2` to compile 64-bit binaries and `Modelica.Utilities.System.setEnvironmentVariable("PYTHONHOME", "C:/Anaconda3")`, so the shared library knows where to search for the Python installation.
+After loading the `ExternalLibrary` package in Dymola, go to `Commands` and run `Advanced.CompileWith64=2` to compile 64-bit binaries and `Modelica.Utilities.System.setEnvironmentVariable("PYTHONHOME", ...)`  and `Modelica.Utilities.System.setEnvironmentVariable("PATH", ...)` (see previous section), so the shared library knows where to search for the Python installation and dependencies.
 
-To run the function with the default parameters, right click `libraryFunction` and select `Run Function...` and then `Execute`.
+To run the function with the default parameters, right click `externalLibraryFunction` and select `Run Function...` and then `Execute`.
 
-The `LibraryObjectExample` demonstrates the use of the external object.
+The `ExternalLibraryFunctionExample` and `ExternalLibraryObjectExample` demonstrates the use of the external function and object respectively.
 
 ## License
 
-Copyright &copy; 2023 Dassault Syst&egrave;mes.
+Copyright &copy; 2024 Dassault Syst&egrave;mes.
 The code is released under the [2-Clause BSD license](LICENSE.txt).
