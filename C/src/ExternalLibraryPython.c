@@ -16,25 +16,7 @@
 
 #define PYTHON_MODULE "external_library"
 
-const char* externalFunction(const char* filename, const char* moduleName, const char* functionName, const char* pythonHome, int nu, const double u[], int ny, double y[]) {
-
-#ifdef _WIN32
-	DWORD dwAttrib = GetFileAttributesA(pythonHome);
-
-	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
-	int isdir = dwAttrib & FILE_ATTRIBUTE_DIRECTORY;
-
-	if (!pythonHome || !valid || !isdir) {
-		return "Argument pythonHome must be a valid directory.";
-	}
-
-	BOOL res = SetDllDirectoryA(pythonHome);
-#endif
-
-	size_t size;
-	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);
-
-	Py_SetPythonHome(python_home_w);
+const char* externalFunction(const char* filename, const char* moduleName, const char* functionName, int nu, const double u[], int ny, double y[]) {
 
 	Py_Initialize();
 
@@ -92,31 +74,12 @@ typedef struct {
 } PythonObjects;
 
 
-void* createExternalObject(const char* filename, const char* moduleName, const char* className, const char* pythonHome, const ModelicaUtilityFunctions_t* callbacks) {
+void* createExternalObject(const char* filename, const char* moduleName, const char* className, const ModelicaUtilityFunctions_t* callbacks) {
 
 	if (!filename) {
 		callbacks->ModelicaError("Argument filename must not be NULL.");
 		return NULL;
 	}
-
-#ifdef _WIN32
-	DWORD dwAttrib = GetFileAttributesA(pythonHome);
-
-	int valid = dwAttrib != INVALID_FILE_ATTRIBUTES;
-	int isdir = dwAttrib & FILE_ATTRIBUTE_DIRECTORY;
-
-	if (!pythonHome || !valid || !isdir) {
-		callbacks->ModelicaError("Argument pythonHome must be a valid directory.");
-		return NULL;
-	}
-
-	BOOL res = SetDllDirectoryA(pythonHome);
-#endif
-
-	size_t size;
-	const wchar_t *python_home_w = Py_DecodeLocale(pythonHome, &size);
-
-	Py_SetPythonHome(python_home_w);
 
 	Py_Initialize();
 

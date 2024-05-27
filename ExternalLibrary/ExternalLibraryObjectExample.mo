@@ -10,15 +10,14 @@ model ExternalLibraryObjectExample
     nout=2,
     filename=Modelica.Utilities.Files.loadResource(
         "modelica://ExternalLibrary/Resources/Data/data.txt"),
-                                      moduleName="external_library", className="ExternalLibraryObject",
-    pythonHome=Modelica.Utilities.System.getEnvironmentVariable("PYTHONHOME"))
+        moduleName="external_library", className="ExternalLibraryObject")
     annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
 equation
   connect(sine.y, libraryObject.u[1]) annotation (Line(points={{-39,28},{-26,28},
-          {-26,-1},{-12,-1}},
+          {-26,-0.5},{-12,-0.5}},
                             color={0,0,127}));
-  connect(sine1.y, libraryObject.u[2]) annotation (Line(points={{-39,-30},{-26,
-          -30},{-26,1},{-12,1}}, color={0,0,127}));
+  connect(sine1.y, libraryObject.u[2]) annotation (Line(points={{-39,-30},{-26,-30},
+          {-26,0.5},{-12,0.5}},  color={0,0,127}));
   annotation (
     Icon(coordinateSystem(preserveAspectRatio=false)),
     Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{

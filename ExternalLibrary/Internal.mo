@@ -37,14 +37,12 @@ package Internal
       input String filename;
       input String moduleName;
       input String className;
-      input String pythonHome;
       input ExternalLibrary.Internal.ModelicaUtilityFunctions callbacks=ExternalLibrary.Internal.ModelicaUtilityFunctions();
       output ExternalLibraryObject externalObject;
     external"C" externalObject = createExternalObject(
           filename,
           moduleName,
           className,
-          pythonHome,
           callbacks)
         annotation (Library="ExternalLibrary");
     end constructor;
@@ -68,7 +66,6 @@ package Internal
     input String filename;
     input String moduleName;
     input String functionName;
-    input String pythonHome;
     input Integer nu;
     input Real[nu] u;
     input Integer ny;
@@ -78,7 +75,6 @@ package Internal
       filename,
       moduleName,
       functionName,
-      pythonHome,
       size(u, 1),
       u,
       size(y, 1),
