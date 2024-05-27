@@ -14,24 +14,31 @@
 
 #include "ExternalLibrary.h"
 
-#define PYTHON_MODULE "external_library"
 
 const char* externalFunction(const char* filename, const char* moduleName, const char* functionName, int nu, const double u[], int ny, double y[]) {
 
+	if (!filename) {
+		return "Argument filename must not be NULL.";
+	}
+
+	if (!moduleName) {
+		return "Argument moduleName must not be NULL.";
+	}
+
 	Py_Initialize();
 
-	PyObject *py_moduleName = PyUnicode_FromString(PYTHON_MODULE);
+	PyObject *py_moduleName = PyUnicode_FromString(moduleName);
 	
 	PyObject *py_module = PyImport_Import(py_moduleName);
 	
 	if (!py_module) {
-		return "Failed to load Python module \"" PYTHON_MODULE "\".";
+		return "Failed to load Python module.";
 	}
 
-	PyObject *py_function = PyObject_GetAttrString(py_module, "external_library_function");
+	PyObject *py_function = PyObject_GetAttrString(py_module, functionName);
 
 	if (!py_function) {
-		return "Failed to load function \"external_library_function\" from Python module \"" PYTHON_MODULE "\".";
+		return "Failed to load function from Python module.";
 	}
 
 	PyObject *py_filename = PyUnicode_FromString(filename);
@@ -81,6 +88,16 @@ void* createExternalObject(const char* filename, const char* moduleName, const c
 		return NULL;
 	}
 
+	if (!moduleName) {
+		callbacks->ModelicaError("Argument moduleName must not be NULL.");
+		return NULL;
+	}
+
+	if (!className) {
+		callbacks->ModelicaError("Argument className must not be NULL.");
+		return NULL;
+	}
+
 	Py_Initialize();
 
 	PythonObjects *o = malloc(sizeof(PythonObjects));
@@ -89,17 +106,30 @@ void* createExternalObject(const char* filename, const char* moduleName, const c
 		return NULL;
 	}
 
-	o->moduleName = PyUnicode_FromString(PYTHON_MODULE);
+	o->moduleName = PyUnicode_FromString(moduleName);
+
 	o->module = PyImport_Import(o->moduleName);
+
+	if (!o->module) {
+		callbacks->ModelicaFormatError("Failed to import module %s.", moduleName);
+		return NULL;
+	}
+	
 	o->module = PyImport_ReloadModule(o->module);
 
 	if (!o->module) {
+		callbacks->ModelicaFormatError("Failed to reload module %s.", moduleName);
 		return NULL;
 	}
 
 	o->methodName = PyUnicode_DecodeFSDefault("evaluate");
 
 	o->class = PyObject_GetAttrString(o->module, className);
+
+	if (!o->class) {
+		callbacks->ModelicaFormatError("Failed to load class %s from module %s.", className, moduleName);
+		return NULL;
+	}
 
 	//int is_type = PyType_Check(o->class);
 
