@@ -136,7 +136,7 @@ void* createExternalObject(const char* filename, const char* moduleName, const c
 
 	o->methodName = PyUnicode_DecodeFSDefault("evaluate");
 
-	o->class = PyObject_GetAttrString(o->module, "ExternalLibraryObject");
+	o->class = PyObject_GetAttrString(o->module, className);
 
 	//int is_type = PyType_Check(o->class);
 
