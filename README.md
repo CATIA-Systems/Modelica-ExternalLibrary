@@ -60,6 +60,25 @@ For Conda environments these can be retrived by running `set PATH` inside a Cond
 On the `ExternalLibraryTest` project in Visual Studio right-click and selct `Properties > Configuration Properties > Debugging`.
 In `Environment` set the two environment variables and run the project to check if everything is set up correctly.
 
+## Renaming the shared library
+
+To change the name of the shared library, rename the target for the copy command in `CMakeLists.txt`
+
+```cmake
+add_custom_command(TARGET ExternalLibrary POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+  "$<TARGET_FILE:ExternalLibrary>"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/MyExternalLibrary${CMAKE_SHARED_LIBRARY_SUFFIX}"
+)
+#                                                                                     ^^^^^^^^^^^^^^^^^
+```
+
+and change all references in the Modelica library accordingly
+
+```Modelica
+annotation (Library="MyExternalLibrary");
+//                   ^^^^^^^^^^^^^^^^^
+```
+
 ## Modelica library
 
 The Modelica library is the same for both the C++ and the Python backend.
