@@ -67,9 +67,10 @@ To change the name of the shared library, rename the target for the copy command
 ```cmake
 add_custom_command(TARGET ExternalLibrary POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
   "$<TARGET_FILE:ExternalLibrary>"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/MyExternalLibrary${CMAKE_SHARED_LIBRARY_SUFFIX}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/${CMAKE_SHARED_LIBRARY_PREFIX}MyExternalLibrary${CMAKE_SHARED_LIBRARY_SUFFIX}"
+
 )
-#                                                                                     ^^^^^^^^^^^^^^^^^
+#                                                                                                                   ^^^^^^^^^^^^^^^^^
 ```
 
 and change all references in the Modelica library accordingly
