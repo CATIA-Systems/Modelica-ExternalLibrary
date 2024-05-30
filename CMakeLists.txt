@@ -67,7 +67,7 @@ SET_TARGET_PROPERTIES(ExternalLibrary PROPERTIES PREFIX "")
 
 add_custom_command(TARGET ExternalLibrary POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
   "$<TARGET_FILE:ExternalLibrary>"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/ExternalLibrary${CMAKE_SHARED_LIBRARY_SUFFIX}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Library/${MODELICA_PLATFORM}/${CMAKE_SHARED_LIBRARY_PREFIX}ExternalLibrary${CMAKE_SHARED_LIBRARY_SUFFIX}"
 )
 
 add_executable(ExternalLibraryTest 
