@@ -78,7 +78,7 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 		double u[] = { 1, 2 };
 		double y[] = { 0, 0 };
 
-		auto message = fp_externalFunction(DATA_FILE, MODULE_NAME, FUNCTION_NAME, 2, u, 2, y);
+		auto message = fp_externalFunction(DATA_FILE, 2, u, 2, PYTHON_DLL, /*PYTHON_EXE*/"", MODULE_NAME, FUNCTION_NAME, y);
 
 		CHECK_THAT(message, Equals(""));
 		CHECK(y[0] == 4);
@@ -89,7 +89,7 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 
 		auto fp_createExternalObject = get<createExternalObject>(l, "createExternalObject");
 
-		fp_createExternalObject(nullptr, nullptr, nullptr, &callbacks);
+		fp_createExternalObject(nullptr, &callbacks, nullptr, nullptr, nullptr, nullptr);
 
 		CHECK_THAT(s_errorMessage, Equals("Argument filename must not be NULL."));
 	}
@@ -103,7 +103,7 @@ TEST_CASE("External functions can be loaded and called", "[ExternalLibrary]") {
 		double u[] = { 1, 2 };
 		double y[] = { 0, 0 };
 
-		void *externalObject = fp_createExternalObject(DATA_FILE, MODULE_NAME, CLASS_NAME, &callbacks);
+		void *externalObject = fp_createExternalObject(DATA_FILE, &callbacks, PYTHON_DLL, PYTHON_EXE, MODULE_NAME, CLASS_NAME);
 
 		REQUIRE(externalObject);
 

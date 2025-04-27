@@ -4,17 +4,26 @@
 
 #include "ExternalLibrary.h"
 
-#define UNUSED(x) (void)(x);
+#define UNUSED(x) (void)(x)
 
 static ModelicaUtilityFunctions_t s_callbacks = { NULL };
 
-const char* externalFunction(const char *filename, const char *moduleName, const char *functionName, int nu, const double u[], int ny, double y[]) {
+const char* externalFunction(
+	const char* filename, 
+	int nu, 
+	const double u[], 
+	int ny, 
+	const char* pythonDllPath, 
+	const char* pythonExePath, 
+	const char* moduleName, 
+	const char* functionName, 
+	double y[]
+) {
 
-	UNUSED(moduleName)
-
-	if (strcmp(functionName, "external_library_function")) {
-		return "Argument functionName must be \"external_library_function\".";
-	}
+	UNUSED(pythonDllPath);
+	UNUSED(pythonExePath);
+	UNUSED(moduleName);
+	UNUSED(functionName);
 
 	std::ifstream infile(filename);
 
@@ -61,9 +70,19 @@ protected:
 
 };
 
-void* createExternalObject(const char *filename, const char *moduleName, const char *className, const ModelicaUtilityFunctions_t *callbacks) {
+void* createExternalObject(
+	const char *filename, 
+	const ModelicaUtilityFunctions_t *callbacks, 
+	const char* pythonDllPath, 
+	const char* pythonExePath, 
+	const char* moduleName, 
+	const char* className
+) {
 
-	UNUSED(moduleName)
+	UNUSED(pythonDllPath);
+	UNUSED(pythonExePath);
+	UNUSED(moduleName);
+	UNUSED(className);
 
 	s_callbacks = *callbacks;
 
@@ -72,11 +91,6 @@ void* createExternalObject(const char *filename, const char *moduleName, const c
 
 	if (!filename) {
 		error = "Argument filename must not be NULL.";
-		goto out;
-	}
-
-	if (!className || strcmp(className, "ExternalLibraryObject")) {
-		error = "Argument className must be \"ExternalLibraryObject\".";
 		goto out;
 	}
 

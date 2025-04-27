@@ -4,8 +4,7 @@ model ExternalLibraryFunctionExample
 
   parameter Real y[2]=ExternalLibrary.externalLibraryFunction(
       Modelica.Utilities.Files.loadResource("modelica://ExternalLibrary/Resources/Data/data.txt"),
-      "external_library",
-      "external_library_function",
-      {1,2});
+    {1,2},
+    ExternalLibrary.PythonParams(moduleName="external_library", functionName="external_library_function"));
 
 end ExternalLibraryFunctionExample;

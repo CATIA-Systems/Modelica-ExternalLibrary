@@ -5,7 +5,29 @@ project (ExternalLibrary)
 set(EXTERNAL_LANGUAGE "CPP" CACHE STRING "Language of the external functions")
 set_property(CACHE EXTERNAL_LANGUAGE PROPERTY STRINGS CPP Python)
 
-set(PYTHON_HOME "E:/Anaconda3/envs/py37_64" CACHE STRING "Python home")
+set(PYTHON_EXE CACHE FILEPATH "Python executable")
+
+execute_process(
+    COMMAND ${PYTHON_EXE} "-c" "import os, sysconfig; print(sysconfig.get_config_var('installed_base').replace(os.sep, '/'))"
+    OUTPUT_VARIABLE PYTHON_INSTALLED_BASE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+    COMMAND ${PYTHON_EXE} "-c" "import sysconfig; print(sysconfig.get_config_var('py_version_nodot'))"
+    OUTPUT_VARIABLE PYTHON_VERSION_NODOT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+    COMMAND ${PYTHON_EXE} "-c" "import os, sysconfig; print(sysconfig.get_path('include').replace(os.sep, '/'))"
+    OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+message(STATUS "PYTHON_INSTALLED_BASE: ${PYTHON_INSTALLED_BASE}")
+message(STATUS "PYTHON_VERSION_NODOT: ${PYTHON_VERSION_NODOT}")
+message(STATUS "PYTHON_INCLUDE_DIR: ${PYTHON_INCLUDE_DIR}")
 
 if (MSVC)
   # link statically against the the Visual C runtime
@@ -52,12 +74,9 @@ target_include_directories(ExternalLibrary PUBLIC
 
 if ("${EXTERNAL_LANGUAGE}" STREQUAL "Python")
   if (WIN32)
-    target_include_directories(ExternalLibrary PUBLIC ${PYTHON_HOME}/include)
-    file(GLOB PYTHON_LIB ${PYTHON_HOME}/libs/python3?*.lib)
-    target_link_libraries(ExternalLibrary ${PYTHON_LIB})
-    file(GLOB PYTHON_DLL ${PYTHON_HOME}/python3?*.dll)
-    get_filename_component(PYTHON_DLL ${PYTHON_DLL} NAME)
-    set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:${PYTHON_LIBRARY_NAME}.dll")
+    target_include_directories(ExternalLibrary PUBLIC ${PYTHON_INCLUDE_DIR})
+    target_link_libraries(ExternalLibrary ${PYTHON_INSTALLED_BASE}/libs/python${PYTHON_VERSION_NODOT}.lib)
+    set(CMAKE_SHARED_LINKER_FLAGS " /DELAYLOAD:python${PYTHON_VERSION_NODOT}.dll")
   else ()
     target_include_directories(ExternalLibrary PUBLIC /usr/include/python3.10)
   endif ()
@@ -78,7 +97,9 @@ add_executable(ExternalLibraryTest
 
 target_compile_definitions(ExternalLibraryTest PUBLIC
   DATA_FILE=\"${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibrary/Resources/Data/data.txt\"
-  PYTHON_HOME=\"${PYTHON_HOME}\"
+  PYTHON_EXE=\"${PYTHON_EXE}\"
+  PYTHON_DLL=\"${PYTHON_INSTALLED_BASE}/python${PYTHON_VERSION_NODOT}.dll\"
+#  PYTHON_HOME=\"${PYTHON_HOME}\"
 )
 
 target_include_directories(ExternalLibraryTest PUBLIC

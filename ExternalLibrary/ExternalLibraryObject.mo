@@ -3,11 +3,10 @@ model ExternalLibraryObject
   extends Modelica.Blocks.Interfaces.MIMO;
 
   parameter String filename "Filename of the data file";
-  parameter String moduleName "Python module name of the external object";
-  parameter String className "Class name of the external object";
+  parameter ExternalLibrary.PythonParams pythonParams = ExternalLibrary.PythonParams() "Python parameters";
 
   ExternalLibrary.Internal.ExternalLibraryObject externalObject=
-      ExternalLibrary.Internal.ExternalLibraryObject(filename, moduleName, className);
+      ExternalLibrary.Internal.ExternalLibraryObject(filename, pythonParams);
 
 protected
   function evaluate

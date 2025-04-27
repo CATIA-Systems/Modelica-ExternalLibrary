@@ -15,7 +15,63 @@
 #include "ExternalLibrary.h"
 
 
-const char* externalFunction(const char* filename, const char* moduleName, const char* functionName, int nu, const double u[], int ny, double y[]) {
+static const char* initializePython(
+	const char* pythonDllPath, 
+	const char* pythonExePath
+) {
+
+	if (!pythonDllPath || strlen(pythonDllPath) == 0) {
+		return "Argument filename must not be NULL or empty.";
+	}
+
+	HMODULE pythonDLL = LoadLibraryA(pythonDllPath);
+
+	if (!pythonDLL) {
+		return "Failed to load Python DLL.";
+	}
+
+	PyConfig config;
+	PyStatus status;
+
+	if (pythonExePath && strlen(pythonExePath) > 0) {
+
+		PyConfig_InitIsolatedConfig(&config);
+
+		const size_t cSize = strlen(pythonExePath) + 1;
+		wchar_t* venv_executable = calloc(cSize, sizeof(wchar_t));
+		mbstowcs(venv_executable, pythonExePath, cSize);
+
+		PyConfig_SetString(&config, &config.executable, venv_executable);
+
+		free(venv_executable);
+
+	} else {
+
+		PyConfig_InitPythonConfig(&config);
+
+	}
+ 
+	status = Py_InitializeFromConfig(&config);
+
+	if (PyStatus_Exception(status)) {
+		Py_ExitStatusException(status);
+	}
+
+	return NULL;
+}
+
+
+const char* externalFunction(
+	const char* filename,
+	int nu,
+	const double u[],
+	int ny,
+	const char* pythonDllPath,
+	const char* pythonExePath,
+	const char* moduleName,
+	const char* functionName,
+	double y[]
+) {
 
 	if (!filename) {
 		return "Argument filename must not be NULL.";
@@ -25,7 +81,11 @@ const char* externalFunction(const char* filename, const char* moduleName, const
 		return "Argument moduleName must not be NULL.";
 	}
 
-	Py_Initialize();
+	const char* initError = initializePython(pythonDllPath, pythonExePath);
+
+	if (initError) {
+		return initError;
+	}
 
 	PyObject *py_moduleName = PyUnicode_FromString(moduleName);
 	
@@ -81,7 +141,14 @@ typedef struct {
 } PythonObjects;
 
 
-void* createExternalObject(const char* filename, const char* moduleName, const char* className, const ModelicaUtilityFunctions_t* callbacks) {
+void* createExternalObject(
+	const char* filename,
+	const ModelicaUtilityFunctions_t* callbacks,
+	const char* pythonDllPath,
+	const char* pythonExePath,
+	const char* moduleName,
+	const char* className
+) {
 
 	if (!filename) {
 		callbacks->ModelicaError("Argument filename must not be NULL.");
@@ -98,7 +165,11 @@ void* createExternalObject(const char* filename, const char* moduleName, const c
 		return NULL;
 	}
 
-	Py_Initialize();
+	const char* initError = initializePython(pythonDllPath, pythonExePath);
+
+	if (initError) {
+		return initError;
+	}
 
 	PythonObjects *o = malloc(sizeof(PythonObjects));
 
@@ -130,8 +201,6 @@ void* createExternalObject(const char* filename, const char* moduleName, const c
 		callbacks->ModelicaFormatError("Failed to load class %s from module %s.", className, moduleName);
 		return NULL;
 	}
-
-	//int is_type = PyType_Check(o->class);
 
 	PyObject *py_filename = PyUnicode_FromString(filename);
 

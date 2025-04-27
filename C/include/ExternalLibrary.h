@@ -14,9 +14,26 @@
 extern "C" {
 #endif
 
-EXPORT const char* externalFunction(const char *filename, const char *moduleName, const char *functionName, int nu, const double u[], int ny, double y[]);
+EXPORT const char* externalFunction(
+	const char* filename,
+	int nu,
+	const double u[],
+	int ny,
+	const char* pythonDllPath,
+	const char* pythonExePath,
+	const char* moduleName,
+	const char* functionName,
+	double y[]
+);
 
-EXPORT void* createExternalObject(const char *filename, const char *moduleName, const char *className, const ModelicaUtilityFunctions_t *callbacks);
+EXPORT void* createExternalObject(
+	const char* filename,
+	const ModelicaUtilityFunctions_t* callbacks,
+	const char* pythonDllPath,
+	const char* pythonExePath,
+	const char* moduleName,
+	const char* className
+);
 
 EXPORT void evaluateExternalObject(void *externalObject, int nu, const double u[], int ny, double y[]);
 

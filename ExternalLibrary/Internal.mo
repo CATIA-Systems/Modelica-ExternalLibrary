@@ -35,15 +35,16 @@ package Internal
 
     function constructor
       input String filename;
-      input String moduleName;
-      input String className;
+      input ExternalLibrary.PythonParams pythonParams;
       input ExternalLibrary.Internal.ModelicaUtilityFunctions callbacks=ExternalLibrary.Internal.ModelicaUtilityFunctions();
       output ExternalLibraryObject externalObject;
     external"C" externalObject = createExternalObject(
           filename,
-          moduleName,
-          className,
-          callbacks)
+          callbacks,
+          pythonParams.pythonDllPath,
+          pythonParams.pythonExePath,
+          pythonParams.moduleName,
+          pythonParams.functionName)
         annotation (Library="ExternalLibrary");
     end constructor;
 
@@ -64,20 +65,21 @@ package Internal
 
   function externalLibraryFunction
     input String filename;
-    input String moduleName;
-    input String functionName;
     input Integer nu;
     input Real[nu] u;
     input Integer ny;
+    input ExternalLibrary.PythonParams pythonParams;
     output Real[ny] y;
     output String errorMessage;
   external"C" errorMessage = externalFunction(
       filename,
-      moduleName,
-      functionName,
       size(u, 1),
       u,
       size(y, 1),
+      pythonParams.pythonDllPath,
+      pythonParams.pythonExePath,
+      pythonParams.moduleName,
+      pythonParams.functionName,
       y) annotation (Library="ExternalLibrary");
   end externalLibraryFunction;
 end Internal;
